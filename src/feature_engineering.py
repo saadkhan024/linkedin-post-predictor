@@ -1,5 +1,49 @@
 import pandas as pd
 import re
+from textblob import TextBlob
+
+def analyze_post_text(post_text):
+    """Analyze actual LinkedIn post text and extract features"""
+    features = {}
+    
+    # Basic text metrics
+    features['word_count'] = len(post_text.split())
+    features['char_count'] = len(post_text)
+    features['line_breaks'] = post_text.count('\n')
+    features['sentences'] = len(post_text.split('.'))
+    
+    # Engagement triggers
+    features['hashtag_count'] = len(re.findall(r'#\w+', post_text))
+    features['mention_count'] = len(re.findall(r'@\w+', post_text))
+    features['emoji_count'] = len([c for c in post_text if c in '😀😃😄😁😆😅🤣😂🙂🙃😉😊😇🥰😍🤩😘😗☺️😚😙🥲😋😛😜🤪😝🤑🤗🤭🤫🤔🤐🤨😐😑😶😏😒🙄😬🤥😌😔😪🤤😴😷🤒🤕🤢🤮🤧🥵🥶🥴😵🤯🤠🥳🥸😎🤓🧐😕😟🙁☹️😮😯😲😳🥺😦😧😨😰😥😢😭😱😖😣😞😓😩😫🥱😤😡😠🤬😈👿💀☠️💩🤡👹👺👻👽👾🤖😺😸😹😻😼😽🙀😿😾🙈🙉🙊💋💌💘💝💖💗💓💞💕💟❣️💔❤️🧡💛💚💙💜🤎🖤🤍💯💢💥💫💦💨🕳️💣💬🗨️🗯️💭💤👋🤚🖐️✋🖖👌🤌🤏✌️🤞🤟🤘🤙👈👉👆🖕👇☝️👍👎✊👊🤛🤜👏🙌👐🤲🤝🙏✍️💅🤳💪🦾🦿🦵🦶👂🦻👃🧠🫀🫁🦷🦴👀👁️👅👄🫦'])
+    features['url_count'] = len(re.findall(r'http[s]?://\S+', post_text))
+    features['question_marks'] = post_text.count('?')
+    features['exclamation_marks'] = post_text.count('!')
+    
+    # Sentiment analysis
+    try:
+        sentiment = TextBlob(post_text).sentiment
+        features['polarity'] = sentiment.polarity  # -1 to 1
+        features['subjectivity'] = sentiment.subjectivity  # 0 to 1
+    except:
+        features['polarity'] = 0
+        features['subjectivity'] = 0.5
+    
+    # Hook analysis (first line/100 chars)
+    first_line = post_text.split('\n')[0] if '\n' in post_text else post_text[:100]
+    features['hook_length'] = len(first_line)
+    features['hook_has_number'] = 1 if re.search(r'\d', first_line) else 0
+    features['hook_has_emoji'] = 1 if any(c in first_line for c in '🔥💡✅🚀💪👉📈🎯') else 0
+    features['hook_has_question'] = 1 if '?' in first_line else 0
+    
+    # Call-to-action detection
+    cta_keywords = ['comment', 'share', 'like', 'follow', 'click', 'check', 'learn', 'read', 'watch', 'join', 'dm', 'thoughts', 'agree']
+    features['has_cta'] = 1 if any(keyword in post_text.lower() for keyword in cta_keywords) else 0
+    
+    # List/bullet points
+    features['has_list'] = 1 if any(marker in post_text for marker in ['1.', '2.', '•', '-', '→']) else 0
+    
+    return features
 
 def extract_features(row):
     """Extract features from a LinkedIn post row"""

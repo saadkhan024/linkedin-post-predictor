@@ -48,6 +48,38 @@
             padding: 40px;
         }
         
+        .tab-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn.active {
+            background: linear-gradient(135deg, #0077b5 0%, #00a0dc 100%);
+            color: white;
+            border-color: #0077b5;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
         .form-group {
             margin-bottom: 25px;
         }
@@ -68,7 +100,18 @@
             transition: border-color 0.3s;
         }
         
-        select:focus, input:focus {
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+        
+        select:focus, input:focus, textarea:focus {
             outline: none;
             border-color: #0077b5;
         }
@@ -225,6 +268,10 @@
             .btn-container {
                 flex-direction: column;
             }
+            
+            .tab-container {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -232,66 +279,168 @@
     <div class="container">
         <div class="header">
             <h1>🔮 LinkedIn Post Predictor</h1>
-            <p>Predict your post performance before publishing</p>
+            <p>Analyze your post performance before publishing</p>
         </div>
         
         <div class="content">
-            <form id="predictorForm">
-                <div class="form-group">
-                    <label for="postType">Post Type</label>
-                    <select id="postType" required>
-                        <option value="Text">📝 Text</option>
-                        <option value="Image">📸 Image</option>
-                        <option value="Video" selected>🎥 Video</option>
-                        <option value="Link">🔗 Link</option>
-                        <option value="Reel">📱 Reel</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="month">Publishing Month</label>
-                    <select id="month" required>
-                        <option value="January">January</option>
-                        <option value="February" selected>February</option>
-                        <option value="March">March</option>
-                        <option value="April">April</option>
-                        <option value="May">May</option>
-                        <option value="June">June</option>
-                        <option value="July">July</option>
-                        <option value="August">August</option>
-                        <option value="September">September</option>
-                        <option value="October">October</option>
-                        <option value="November">November</option>
-                        <option value="December">December</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="impressions">Expected Impressions</label>
-                    <input type="number" id="impressions" value="5000" min="0" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="reach">Expected Reach</label>
-                    <input type="number" id="reach" value="6000" min="0" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="clicks">Expected Clicks</label>
-                    <input type="number" id="clicks" value="400" min="0" required>
-                </div>
-                
-                <div class="btn-container">
-                    <button type="submit" class="btn-predict">🔮 Predict Performance</button>
-                    <button type="button" class="btn-compare" onclick="compareTypes()">📊 Compare All Types</button>
-                </div>
-            </form>
+            <div class="tab-container">
+                <button class="tab-btn active" onclick="switchTab('text')">📝 Analyze Post Text</button>
+                <button class="tab-btn" onclick="switchTab('metrics')">📊 Predict by Metrics</button>
+            </div>
+
+            <!-- Text Analysis Tab -->
+            <div id="textTab" class="tab-content active">
+                <form id="textAnalysisForm">
+                    <div class="form-group">
+                        <label for="postText">Paste Your LinkedIn Post</label>
+                        <textarea id="postText" rows="10" placeholder="Paste your LinkedIn post here...
+
+Example:
+🚀 Just deployed my first CI/CD pipeline!
+
+Here's what I learned:
+1. Automation saves time
+2. Testing is crucial  
+3. DevOps is essential
+
+What's your favorite DevOps tool? 👇
+
+#DevOps #CICD #AWS"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn-predict">🔮 Analyze My Post</button>
+                </form>
+            </div>
+
+            <!-- Metrics Analysis Tab -->
+            <div id="metricsTab" class="tab-content">
+                <form id="predictorForm">
+                    <div class="form-group">
+                        <label for="postType">Post Type</label>
+                        <select id="postType" required>
+                            <option value="Text">📝 Text</option>
+                            <option value="Image">📸 Image</option>
+                            <option value="Video" selected>🎥 Video</option>
+                            <option value="Link">🔗 Link</option>
+                            <option value="Reel">📱 Reel</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="month">Publishing Month</label>
+                        <select id="month" required>
+                            <option value="January">January</option>
+                            <option value="February" selected>February</option>
+                            <option value="March">March</option>
+                            <option value="April">April</option>
+                            <option value="May">May</option>
+                            <option value="June">June</option>
+                            <option value="July">July</option>
+                            <option value="August">August</option>
+                            <option value="September">September</option>
+                            <option value="October">October</option>
+                            <option value="November">November</option>
+                            <option value="December">December</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="impressions">Expected Impressions</label>
+                        <input type="number" id="impressions" value="5000" min="0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reach">Expected Reach</label>
+                        <input type="number" id="reach" value="6000" min="0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="clicks">Expected Clicks</label>
+                        <input type="number" id="clicks" value="400" min="0" required>
+                    </div>
+                    
+                    <div class="btn-container">
+                        <button type="submit" class="btn-predict">🔮 Predict Performance</button>
+                        <button type="button" class="btn-compare" onclick="compareTypes()">📊 Compare All Types</button>
+                    </div>
+                </form>
+            </div>
             
             <div id="results" class="results"></div>
         </div>
     </div>
     
     <script>
+        // Tab switching
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            if (tab === 'text') {
+                document.querySelector('.tab-btn:first-child').classList.add('active');
+                document.getElementById('textTab').classList.add('active');
+            } else {
+                document.querySelector('.tab-btn:last-child').classList.add('active');
+                document.getElementById('metricsTab').classList.add('active');
+            }
+        }
+
+        // Text analysis form submission
+        document.getElementById('textAnalysisForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const postText = document.getElementById('postText').value;
+            
+            if (!postText || postText.trim().length < 10) {
+                alert('Please enter at least 10 characters');
+                return;
+            }
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '<div class="loading">⏳ Analyzing your post...</div>';
+            
+            try {
+                const response = await fetch('/predict-text', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ post_text: postText })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const result = data.result;
+                    resultsDiv.innerHTML = `
+                        <div class="score-display">
+                            <div class="score-number">${result.emoji} ${result.score}/100</div>
+                            <div class="score-rating">${result.rating} Post</div>
+                        </div>
+                        
+                        <div class="recommendations">
+                            <h3>💡 Feedback & Recommendations</h3>
+                            <ul>
+                                ${result.feedback.map(item => `<li>${item}</li>`).join('')}
+                            </ul>
+                        </div>
+                        
+                        <div style="margin-top: 20px; padding: 15px; background: white; border-radius: 8px;">
+                            <h4 style="margin-bottom: 10px;">📊 Post Analysis</h4>
+                            <p>Words: ${result.features.word_count} | Hashtags: ${result.features.hashtag_count} | Emojis: ${result.features.emoji_count}</p>
+                            <p>Questions: ${result.features.question_marks} | Line Breaks: ${result.features.line_breaks}</p>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `<div style="color: red;">Error: ${data.error}</div>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div style="color: red;">Error: ${error.message}</div>`;
+            }
+        });
+
+        // Metrics form submission
         document.getElementById('predictorForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -414,3 +563,4 @@
     </script>
 </body>
 </html>
+

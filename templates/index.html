@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn Post Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #0077b5 0%, #00a0dc 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: #0077b5;
+        }
+        
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-predict {
+            background: linear-gradient(135deg, #0077b5 0%, #00a0dc 100%);
+            color: white;
+        }
+        
+        .btn-compare {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .results {
+            margin-top: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            display: none;
+        }
+        
+        .score-display {
+            text-align: center;
+            padding: 30px;
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .score-number {
+            font-size: 3em;
+            font-weight: bold;
+            color: #0077b5;
+        }
+        
+        .score-rating {
+            font-size: 1.5em;
+            margin-top: 10px;
+            color: #666;
+        }
+        
+        .engagement-breakdown {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .engagement-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .engagement-item .number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #0077b5;
+        }
+        
+        .engagement-item .label {
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .recommendations {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .recommendations h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .recommendations ul {
+            list-style: none;
+        }
+        
+        .recommendations li {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #0077b5;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .comparison-table th {
+            background: #0077b5;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+        
+        .comparison-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .comparison-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        @media (max-width: 600px) {
+            .engagement-breakdown {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔮 LinkedIn Post Predictor</h1>
+            <p>Predict your post performance before publishing</p>
+        </div>
+        
+        <div class="content">
+            <form id="predictorForm">
+                <div class="form-group">
+                    <label for="postType">Post Type</label>
+                    <select id="postType" required>
+                        <option value="Text">📝 Text</option>
+                        <option value="Image">📸 Image</option>
+                        <option value="Video" selected>🎥 Video</option>
+                        <option value="Link">🔗 Link</option>
+                        <option value="Reel">📱 Reel</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="month">Publishing Month</label>
+                    <select id="month" required>
+                        <option value="January">January</option>
+                        <option value="February" selected>February</option>
+                        <option value="March">March</option>
+                        <option value="April">April</option>
+                        <option value="May">May</option>
+                        <option value="June">June</option>
+                        <option value="July">July</option>
+                        <option value="August">August</option>
+                        <option value="September">September</option>
+                        <option value="October">October</option>
+                        <option value="November">November</option>
+                        <option value="December">December</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="impressions">Expected Impressions</label>
+                    <input type="number" id="impressions" value="5000" min="0" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="reach">Expected Reach</label>
+                    <input type="number" id="reach" value="6000" min="0" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="clicks">Expected Clicks</label>
+                    <input type="number" id="clicks" value="400" min="0" required>
+                </div>
+                
+                <div class="btn-container">
+                    <button type="submit" class="btn-predict">🔮 Predict Performance</button>
+                    <button type="button" class="btn-compare" onclick="compareTypes()">📊 Compare All Types</button>
+                </div>
+            </form>
+            
+            <div id="results" class="results"></div>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('predictorForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                post_type: document.getElementById('postType').value,
+                month: document.getElementById('month').value,
+                impressions: document.getElementById('impressions').value,
+                reach: document.getElementById('reach').value,
+                clicks: document.getElementById('clicks').value
+            };
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '<div class="loading">⏳ Analyzing...</div>';
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const result = data.result;
+                    resultsDiv.innerHTML = `
+                        <div class="score-display">
+                            <div class="score-number">${result.emoji} ${result.engagement_score}</div>
+                            <div class="score-rating">${result.rating} Performance</div>
+                        </div>
+                        
+                        <div class="engagement-breakdown">
+                            <div class="engagement-item">
+                                <div class="number">~${result.estimated_reactions}</div>
+                                <div class="label">Reactions</div>
+                            </div>
+                            <div class="engagement-item">
+                                <div class="number">~${result.estimated_comments}</div>
+                                <div class="label">Comments</div>
+                            </div>
+                            <div class="engagement-item">
+                                <div class="number">~${result.estimated_shares}</div>
+                                <div class="label">Shares</div>
+                            </div>
+                        </div>
+                        
+                        <div class="recommendations">
+                            <h3>💡 Recommendations</h3>
+                            <ul>
+                                ${result.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `<div style="color: red;">Error: ${data.error}</div>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div style="color: red;">Error: ${error.message}</div>`;
+            }
+        });
+        
+        async function compareTypes() {
+            const formData = {
+                month: document.getElementById('month').value,
+                impressions: document.getElementById('impressions').value,
+                reach: document.getElementById('reach').value,
+                clicks: document.getElementById('clicks').value
+            };
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '<div class="loading">⏳ Comparing post types...</div>';
+            
+            try {
+                const response = await fetch('/compare', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const comparison = data.comparison;
+                    resultsDiv.innerHTML = `
+                        <h3 style="margin-bottom: 15px;">📊 Performance Comparison</h3>
+                        <div class="comparison-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Post Type</th>
+                                        <th>Engagement Score</th>
+                                        <th>Rating</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${comparison.map(row => `
+                                        <tr>
+                                            <td><strong>${row['Post Type']}</strong></td>
+                                            <td>${row['Engagement Score']}</td>
+                                            <td>${row['Rating']}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `<div style="color: red;">Error: ${data.error}</div>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div style="color: red;">Error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
